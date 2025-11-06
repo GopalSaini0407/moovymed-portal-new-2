@@ -13,8 +13,8 @@ import Dashboard from "../pages/Dashboard";
 import Settings from "../pages/Settings";
 import SettingsTags from "../pages/SettingsTags";
 import UserProfile from "../pages/UserProfile";
-import CategoryPage from "../pages/CategoryPage";
-import CategoryContents from "../pages/CategoryContent";
+import CategoryDetails from "../pages/CategoryDetails";
+import ContentDetail from "../pages/ContentDetails";
 
 // 🔒 Protected route wrapper
 function ProtectedRoute({ children }) {
@@ -54,8 +54,8 @@ const AppRouter = () => {
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/settings/tags" element={<ProtectedRoute><SettingsTags /></ProtectedRoute>} />
       <Route path="/settings/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-      <Route path="/category/content" element={<ProtectedRoute><CategoryContents /></ProtectedRoute>} />
-      <Route path="/category/:categoryName" element={<ProtectedRoute><CategoryPage /></ProtectedRoute>} />
+      <Route path="/category/:id" element={<ProtectedRoute><CategoryDetails /></ProtectedRoute>} />
+      <Route path="/content/:id" element={<ProtectedRoute><ContentDetail /></ProtectedRoute>} />
 
       {/* Optional: 404 route */}
       {/* <Route path="*" element={<NotFound />} /> */}

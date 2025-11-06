@@ -43,14 +43,14 @@ const Categories = () => {
       setLoading(false);
     }
   };
-
+console.log(categories)
   // 🧠 Fetch again whenever language changes
   useEffect(() => {
     fetchCategories();
   }, [language]);
 
-  const handleCategoryClick = (categoryName) => {
-    navigate(`/category/${categoryName}`);
+  const handleCategoryClick = (id) => {
+    navigate(`/category/${id}`);
   };
 
   if (loading) {
@@ -71,7 +71,7 @@ const Categories = () => {
         {categories.map((category, index) => (
           <div
             key={index}
-            onClick={() => handleCategoryClick(category.category_name)}
+            onClick={() => handleCategoryClick(category.id)}
             className="bg-gray-50 hover:bg-blue-50 rounded-xl p-4 text-center cursor-pointer transition border border-transparent hover:border-blue-200 group"
           >
             <div className="flex justify-center mb-2">

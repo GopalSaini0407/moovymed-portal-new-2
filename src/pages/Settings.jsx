@@ -2,6 +2,7 @@ import React from "react";
 import { IoArrowBack } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import DashboardNavbar from "../components/navbar/DashboardNavbar";
+import MainLayout from "../layouts/MainLayout";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -21,8 +22,14 @@ export default function Settings() {
 
   return (
     <>
-    <DashboardNavbar/>
-    <div className="max-w-7xl mx-auto p-6">
+    <MainLayout>
+    <div
+  className="max-w-7xl mx-auto p-6 rounded-2xl"
+  style={{
+    backdropFilter: "blur(20px)",
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
+  }}
+>
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
@@ -47,6 +54,8 @@ export default function Settings() {
         ))}
       </div>
     </div>
+    </MainLayout>
+   
     </>
     
   );

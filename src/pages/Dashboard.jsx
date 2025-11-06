@@ -1,9 +1,9 @@
 import { useState } from "react";
 import DashboardNavbar from "../components/navbar/DashboardNavbar";
-import DocumentUploadModal from "../components/upload/DocumentUploadModal";
+import DocumentUploadModal from "../components/content/DocumentUploadModal";
 import Categories from "./Categories";
 import UserGreeting from "../components/UserGreeting"; // 👈 Added
-
+import MainLayout from "../layouts/MainLayout";
 const Dashboard = () => {
   const [searchValue, setSearchValue] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -12,20 +12,10 @@ const Dashboard = () => {
   const clearSearch = () => setSearchValue("");
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Navbar */}
-      <DashboardNavbar />
-
-      {/* Main Content */}
-      <main
-        className="flex-grow px-4 py-8"
-        style={{
-          background:
-            "linear-gradient(45deg, rgba(196,27,104,1) 0%, rgba(100,189,254,1) 50%, rgb(45 199 183) 100%)",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-        }}
-      >
+    <>
+ {/* Main Content */}
+ <MainLayout>
+ <div>
         {/* ✅ Greeting (User name from API) */}
         <UserGreeting />
 
@@ -74,19 +64,14 @@ const Dashboard = () => {
 
         {/* 🏷️ Categories */}
         <Categories />
-      </main>
-
+      </div>
+      </MainLayout>
       {/* 📤 Upload Modal */}
       <DocumentUploadModal
         open={showUploadModal}
         onClose={() => setShowUploadModal(false)}
       />
-
-      {/* 🦶 Footer */}
-      <footer className="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} MoovyMed. All rights reserved.
-      </footer>
-    </div>
+    </>
   );
 };
 

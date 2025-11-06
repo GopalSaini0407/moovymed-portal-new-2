@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaArrowLeft, FaCheck } from "react-icons/fa";
 import { toast } from "react-toastify";
+import MainLayout from "../layouts/MainLayout";
 
 export default function UserProfile() {
   const [profile, setProfile] = useState({
@@ -85,7 +86,13 @@ export default function UserProfile() {
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <MainLayout>
+ <div className="max-w-3xl mx-auto p-6 rounded-2xl"
+    style={{
+      backdropFilter: "blur(20px)",
+      backgroundColor: "rgba(255, 255, 255, 0.75)",
+    }}
+    >
       {/* Back Button */}
       <button
         onClick={() => window.history.back()}
@@ -107,7 +114,7 @@ export default function UserProfile() {
         <form
           autoComplete="off"
           onSubmit={handleSubmit}
-          className="bg-white p-6 rounded-xl shadow-md border border-gray-200"
+          className=" p-6 rounded-xl"
         >
           {/* Email Field */}
           <div className="mb-6">
@@ -130,7 +137,7 @@ export default function UserProfile() {
           <div className="mb-6">
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm border-gray-300 font-medium text-gray-700 mb-2"
             >
               Name
             </label>
@@ -190,5 +197,7 @@ export default function UserProfile() {
         </form>
       )}
     </div>
+    </MainLayout>
+   
   );
 }

@@ -75,7 +75,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gradient-to-r from-pink-600 via-blue-400 to-teal-400">
+    <div className="min-h-screen w-full flex flex-col" style={{ background:"linear-gradient(135deg, rgba(79, 177, 231, 1) 0%, rgba(255, 0, 117, 1) 100%)" }}>
       {/* Navbar */}
       <AuthNavbar />
 

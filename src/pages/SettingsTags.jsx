@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaArrowLeft, FaTimes, FaEdit, FaPlus } from "react-icons/fa";
 import axios from "axios";
+import MainLayout from "../layouts/MainLayout";
 
 export default function SettingsTags() {
   const [tags, setTags] = useState([]);
@@ -87,7 +88,13 @@ export default function SettingsTags() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <MainLayout>
+<div className="max-w-6xl mx-auto p-6 rounded-2xl"
+    style={{
+      backdropFilter: "blur(20px)",
+      backgroundColor: "rgba(255, 255, 255, 0.75)",
+    }}
+    >
       {/* Back button */}
       <button
         onClick={() => window.history.back()}
@@ -196,6 +203,8 @@ export default function SettingsTags() {
         </div>
       )}
     </div>
+    </MainLayout>
+    
   );
 }
   

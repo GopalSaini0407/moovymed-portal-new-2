@@ -1,78 +1,67 @@
-// // src/api/axiosInstance.js
-// import axios from "axios";
-// import { toast } from "react-toastify";
+// src/api/axiosInstance.js
+import axios from "axios";
 
-// // Base URL
-// const baseURL = "https://app.moovymed.de";
+const axiosInstance = axios.create({
+  baseURL: "https://app.moovymed.de/api/v1",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
 
-// // Create Axios instance
-// const axiosInstance = axios.create({
-//   baseURL,
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-// });
+// ✅ Request interceptor — token header automatically add karega
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// // Request interceptor: Add access token
-// axiosInstance.interceptors.request.use(
-//   (config) => {
-//     const user = JSON.parse(localStorage.getItem("token"));
-//     if (user?.access_token) {
-//       config.headers["Authorization"] = `Bearer ${user.access_token}`;
-//     }
-//     return config;
-//   },
-//   (error) => Promise.reject(error)
-// );
+// ✅ Response interceptor — refresh token API handle karega
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-// // Response interceptor: Handle 401 and refresh token
-// axiosInstance.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const originalRequest = error.config;
+    // Agar access token expire ho gaya (401)
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-//     if (
-//       error.response &&
-//       error.response.status === 401 &&
-//       !originalRequest._retry
-//     ) {
-//       originalRequest._retry = true;
+      try {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (!refreshToken) {
+          throw new Error("No refresh token found");
+        }
 
-//       try {
-//         // Get refresh token from localStorage
-//         const user = JSON.parse(localStorage.getItem("token"));
-//         if (!user?.refresh_token) {
-//           throw new Error("No refresh token available");
-//         }
+        // 🔁 Refresh token API call
+        const res = await axios.post(
+          "https://app.moovymed.de/api/v1/user/refresh",
+          { token: refreshToken }
+        );
 
-//         // Call refresh token API
-//         const refreshRes = await axios.post(`${baseURL}/api/v1/user/refresh`, {
-//           refresh_token: user.refresh_token,
-//         });
+        const newAccessToken = res.data.accessToken;
+        localStorage.setItem("token", newAccessToken);
 
-//         const newAccessToken = refreshRes.data.access_token;
-//         const expires_in = refreshRes.data.expires_in || 120;
+        // 🔁 Update header and retry original request
+        axiosInstance.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${newAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-//         // Update localStorage user
-//         const updatedUser = { ...user, access_token: newAccessToken };
-//         localStorage.setItem("token", JSON.stringify(updatedUser));
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        console.error("Refresh token expired:", refreshError);
+        localStorage.clear();
+        window.location.href = "/login";
+      }
+    }
 
-//         // Update original request with new token
-//         originalRequest.headers[
-//           "Authorization"
-//         ] = `Bearer ${newAccessToken}`;
+    return Promise.reject(error);
+  }
+);
 
-//         return axiosInstance(originalRequest);
-//       } catch (err) {
-//         toast.error("Session expired. Please login again.");
-//         localStorage.removeItem("token");
-//         window.location.href = "/login";
-//         return Promise.reject(err);
-//       }
-//     }
-
-//     return Promise.reject(error);
-//   }
-// );
-
-// export default axiosInstance;
+export default axiosInstance;
