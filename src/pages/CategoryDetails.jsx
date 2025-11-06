@@ -178,7 +178,7 @@ const CategoryDetails = () => {
           </div>
         );
       })}
-    </div>
+    </div>  
   </div>
 ) : (
   <div className="text-center text-gray-500 py-10">

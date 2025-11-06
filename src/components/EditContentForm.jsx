@@ -1,36 +1,54 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
+const EditContentForm = ({ id, onClose, onSuccess }) => {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
-  const [files, setFiles] = useState([]); // multiple files
+  const [files, setFiles] = useState([]);
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]); // store tag IDs
   const [newTag, setNewTag] = useState("");
   const [loading, setLoading] = useState(false);
-
   const token = localStorage.getItem("token");
 
-  // Fetch existing tags
+  // 🔹 Fetch content details to prefill
+  const fetchContent = async () => {
+    try {
+      const res = await axios.get(
+        `https://app.moovymed.de/api/v1/category-content/get/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = res.data.data.contentData;
+      const tagList = res.data.data.contentTags || [];
+      setTitle(data.title);
+      setNotes(data.notes);
+      setFiles(data.media_file);
+      setSelectedTags(tagList.map((t) => t.id.toString())); // convert to string for select
+    } catch (err) {
+      console.error("Error fetching content:", err);
+    }
+  };
+
+  // 🔹 Fetch available tags
   const fetchTags = async () => {
     try {
       const res = await axios.get("https://app.moovymed.de/api/v1/tags", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setTags(res.data.data || []);
-    } catch (error) {
-      console.error("Error fetching tags:", error);
+    } catch (err) {
+      console.error("Error fetching tags:", err);
     }
   };
 
   useEffect(() => {
+    fetchContent();
     fetchTags();
-  }, []);
+  }, [id]);
 
-  // Add new tag
+  // 🔹 Add new tag
   const handleAddTag = async () => {
     if (!newTag.trim()) return;
     try {
@@ -45,33 +63,29 @@ const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
         }
       );
       setNewTag("");
-      fetchTags(); // refresh list
+      fetchTags();
       alert("Tag added successfully!");
-    } catch (error) {
-      console.error("Error creating tag:", error);
-      alert("Failed to create tag");
+    } catch (err) {
+      console.error("Error adding tag:", err);
+      alert("Failed to add tag");
     }
   };
 
-  // Submit content form
-  const handleSubmit = async (e) => {
+  // 🔹 Handle file selection
+  const handleFileChange = (e) => {
+    setFiles([...e.target.files]);
+  };
+
+  // 🔹 Submit update
+  const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("notes", notes);
-      formData.append("category_id", categoryId);
 
-      // ✅ Append multiple files
-      if (files && files.length > 0) {
-        files.forEach((file) => {
-          formData.append("media_file", file);
-        });
-      }
-
-      // ✅ Keep tags logic same as before (you said this was working fine)
+      // ✅ Convert tag IDs → tag names (same as AddContentForm)
       const selectedTagNames = tags
         .filter((t) => selectedTags.includes(t.id.toString()))
         .map((t) => t.tag);
@@ -80,8 +94,11 @@ const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
         formData.append(`tags[${i}]`, tagName)
       );
 
+      // multiple media files
+      files.forEach((file, i) => formData.append(`media_files[${i}]`, file));
+
       await axios.post(
-        "https://app.moovymed.de/api/v1/category-content/create",
+        `https://app.moovymed.de/api/v1/category-content/update/${id}`,
         formData,
         {
           headers: {
@@ -91,12 +108,12 @@ const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
         }
       );
 
-      alert("Content added successfully!");
+      alert("✅ Content updated successfully!");
       onSuccess();
       onClose();
-    } catch (error) {
-      console.error("Error adding content:", error);
-      alert("Failed to add content.");
+    } catch (err) {
+      console.error("Error updating content:", err);
+      alert("❌ Update failed!");
     } finally {
       setLoading(false);
     }
@@ -106,10 +123,10 @@ const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
     <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
       <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-lg relative">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">
-          Add New Content
+          Edit Content
         </h3>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleUpdate} className="space-y-4">
           {/* Title */}
           <div>
             <label className="block text-sm font-medium mb-1">Title</label>
@@ -133,25 +150,30 @@ const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
             />
           </div>
 
-          {/* ✅ Multiple File Upload */}
+          {/* Media Files */}
           <div>
-            <label className="block text-sm font-medium mb-1">Media Files</label>
+            <label className="block text-sm font-medium mb-1">
+              Upload Media Files
+            </label>
             <input
               type="file"
               multiple
-              onChange={(e) => setFiles(Array.from(e.target.files))}
+              accept="image/*,video/*,application/pdf"
+              onChange={handleFileChange}
               className="w-full"
             />
-            {files.length > 0 && (
-              <ul className="mt-2 text-sm text-gray-600 list-disc list-inside">
-                {files.map((f, i) => (
-                  <li key={i}>{f.name}</li>
-                ))}
-              </ul>
+
+            {/* Existing file preview */}
+            {files && typeof files === "string" && (
+              <img
+                src={files}
+                alt="preview"
+                className="mt-3 w-32 h-32 object-cover rounded-lg"
+              />
             )}
           </div>
 
-          {/* Tag Selection */}
+          {/* Tags */}
           <div>
             <label className="block text-sm font-medium mb-1">Select Tags</label>
             <select
@@ -165,7 +187,7 @@ const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
               className="w-full border rounded-lg px-3 py-2 h-28"
             >
               {tags.map((tag) => (
-                <option key={tag.id} value={tag.id}>
+                <option key={tag.id} value={tag.id.toString()}>
                   {tag.tag}
                 </option>
               ))}
@@ -208,7 +230,7 @@ const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
                   : "bg-blue-500 hover:bg-blue-600"
               }`}
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Updating..." : "Update"}
             </button>
           </div>
         </form>
@@ -217,4 +239,4 @@ const AddContentForm = ({ categoryId, onClose, onSuccess }) => {
   );
 };
 
-export default AddContentForm;
+export default EditContentForm;
